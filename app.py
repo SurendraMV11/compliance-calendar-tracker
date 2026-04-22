@@ -1,10 +1,13 @@
 from flask import Flask, jsonify
 from routes.health_routes import health_bp
+from routes.describe_routes import describe_bp
+
 
 app = Flask(__name__)
 
-# Register blueprint
+
 app.register_blueprint(health_bp)
+app.register_blueprint(describe_bp)
 
 @app.route("/")
 def home():
