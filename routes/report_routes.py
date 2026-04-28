@@ -1,8 +1,14 @@
 from flask import Blueprint, request, jsonify
-from services.groq_client import generate_report
+from services.async_service import process_report_async
 from datetime import datetime
+import uuid
+import threading
 
 report_bp = Blueprint("report", __name__)
+
+stored_reports = {}
+lock = threading.Lock()
+
 
 @report_bp.route("/generate-report", methods=["POST"])
 def generate():
@@ -11,15 +17,32 @@ def generate():
     if not isinstance(data, dict) or "text" not in data:
         return jsonify({"error": "Please enter valid input"}), 400
 
-    user_input = data.get("text")
+    user_input = data["text"]
 
-    if not isinstance(user_input, str) or not user_input.strip():
-        return jsonify({"error": "Please enter valid input"}), 400
+    report_id = str(uuid.uuid4())
 
-    result = generate_report(user_input)
+    with lock:
+        stored_reports[report_id] = {
+            "status": "PENDING",
+            "data": None,
+            "created_at": datetime.utcnow().isoformat()
+        }
 
-  
-    result["generated_at"] = datetime.utcnow().isoformat()
+    process_report_async(report_id, user_input, stored_reports, lock)
 
-    
-    return jsonify(result)
+    return jsonify({
+        "report_id": report_id,
+        "status": "PENDING"
+    })
+
+
+
+@report_bp.route("/report/<report_id>", methods=["GET"])
+def get_report(report_id):
+    with lock:
+        report = stored_reports.get(report_id)
+
+    if not report:
+        return jsonify({"error": "Report not found"}), 404
+
+    return jsonify(report)
