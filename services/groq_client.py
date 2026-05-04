@@ -109,3 +109,52 @@ def stream_report(user_input):
 
     except Exception as e:
         yield f"ERROR: {str(e)}"
+
+def analyse_document(user_input):
+    try:
+        prompt = f"""
+You are an AI document analyst.
+
+Strict Instructions:
+- Return ONLY valid JSON
+- No extra text
+- Output must be:
+{{
+  "findings": [
+    {{
+      "type": "insight",
+      "description": "..."
+    }},
+    {{
+      "type": "risk",
+      "description": "..."
+    }}
+  ]
+}}
+
+Rules:
+- Identify key insights and risks from the text
+- At least 3 insights and 3 risks
+- Keep descriptions clear and professional
+
+Input:
+{user_input}
+"""
+
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        content = response.choices[0].message.content.strip()
+
+        if content.startswith("```"):
+            content = content.replace("```json", "").replace("```", "").strip()
+
+        return json.loads(content)
+
+    except Exception as e:
+        return {
+            "error": "Invalid JSON",
+            "details": str(e)
+        }
