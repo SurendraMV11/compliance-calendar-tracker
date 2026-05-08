@@ -1,3 +1,4 @@
+from services.model_loader import embedding_model
 from flask import Flask, jsonify
 from routes.health_routes import health_bp
 from routes.describe_routes import describe_bp
