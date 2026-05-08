@@ -1,0 +1,1 @@
+Server-Sent Events enable real-time streaming between server and client applications.

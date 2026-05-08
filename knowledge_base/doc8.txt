@@ -1,0 +1,1 @@
+Structured JSON responses simplify frontend and backend integration processes.

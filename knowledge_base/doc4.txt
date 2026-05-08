@@ -1,0 +1,1 @@
+Batch processing allows multiple requests to be processed efficiently in a single operation.

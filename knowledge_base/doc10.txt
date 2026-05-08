@@ -1,0 +1,1 @@
+Flask microservices provide scalable backend architecture for AI-powered applications.
